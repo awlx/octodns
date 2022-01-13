@@ -11,6 +11,8 @@ from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import ARecord, AaaaRecord, CaaRecord, \
     CnameRecord, MxRecord, SrvRecord, NsRecord, PtrRecord, TxtRecord, Zone
 
+from azure.core.pipeline.policies import RetryPolicy
+
 import logging
 from functools import reduce
 from ..record import Record
@@ -343,6 +345,10 @@ class AzureProvider(BaseProvider):
     @property
     def _dns_client(self):
         if self.__dns_client is None:
+            retry_policy = RetryPolicy(
+                total_retries = 20,
+                status_retries = 5
+            )
             credential = ClientSecretCredential(
                 client_id=self._dns_client_client_id,
                 client_secret=self._dns_client_key,
@@ -351,8 +357,7 @@ class AzureProvider(BaseProvider):
             self.__dns_client = DnsManagementClient(
                 credential=credential,
                 subscription_id=self._dns_client_subscription_id,
-                retry_total=20,
-                retry_read=5
+                retry_policy=retry_policy
             )
         return self.__dns_client
 
