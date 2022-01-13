@@ -350,7 +350,9 @@ class AzureProvider(BaseProvider):
             )
             self.__dns_client = DnsManagementClient(
                 credential=credential,
-                subscription_id=self._dns_client_subscription_id
+                subscription_id=self._dns_client_subscription_id,
+                retry_total=20,
+                retry_read=5
             )
         return self.__dns_client
 
